@@ -1,0 +1,179 @@
+openapi: 3.0.3
+info:
+  title: Issue Tracker
+  version: 0.0.1
+tags:
+  - name: issue
+    description: Issues CRUD requests
+paths:
+  /v1/issues:
+    get:
+      tags:
+        - issue
+      summary: Returns issues list
+      operationId: getIssues
+      responses:
+        '200':
+          $ref: '#/components/responses/IssuesListResponse'
+    post:
+      tags:
+        - issue
+      summary: Create new issue
+      operationId: createIssue
+      requestBody:
+        $ref: '#/components/requestBodies/IssueBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/IssueResponse'
+  /v1/issues/{issueId}:
+    get:
+      tags:
+        - issue
+      summary: Return issue
+      operationId: getIssue
+      parameters:
+        - $ref: '#/components/parameters/IssueId'
+      responses:
+        '200':
+          $ref: '#/components/responses/IssueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    put:
+      tags:
+        - issue
+      summary: Edit issue
+      operationId: editIssue
+      parameters:
+        - $ref: '#/components/parameters/IssueId'
+      requestBody:
+        $ref: '#/components/requestBodies/IssueBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/IssueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags:
+        - issue
+      summary: Remove issue
+      operationId: removeIssue
+      parameters:
+        - $ref: '#/components/parameters/IssueId'
+      responses:
+        '200':
+          $ref: '#/components/responses/IssueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /v1/issues/{issueId}/{issueEvent}:
+    post:
+      tags:
+        - issue
+      summary: Remove issue
+      operationId: issueEvent
+      parameters:
+        - $ref: '#/components/parameters/IssueId'
+        - $ref: '#/components/parameters/IssueEvent'
+      responses:
+        '200':
+          $ref: '#/components/responses/IssueResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  schemas:
+    Issue:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        state:
+          $ref: '#/components/schemas/IssueState'
+      additionalProperties: false
+      required:
+        - id
+        - title
+        - description
+        - state
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    IssueState:
+      type: string
+      enum:
+        - pending
+        - opened
+        - closed
+    IssueEvent:
+      type: string
+      enum:
+        - moveToClosed
+        - moveToPending
+  requestBodies:
+    IssueBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                $ref: '#/components/schemas/Issue/properties/title'
+              description:
+                $ref: '#/components/schemas/Issue/properties/description'
+            additionalProperties: false
+            required:
+              - title
+              - description
+  parameters:
+    IssueId:
+      in: path
+      name: issueId
+      required: true
+      schema:
+        type: string
+    IssueEvent:
+      in: path
+      name: issueEvent
+      schema:
+        $ref: '#/components/schemas/IssueEvent'
+      required: true
+  responses:
+    IssuesListResponse:
+      description: List of issues
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/Issue'
+    IssueResponse:
+      description: Single issue
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Issue'
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
